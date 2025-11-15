@@ -253,5 +253,32 @@ app.post("/claim", async (req, res) => {
   }
 });
 
+// Health check endpoint for uptime pings
+app.get('/health', (req, res) => {
+  res.send({ ok: true, time: Date.now() });
+});
+
+// --- Keep-alive pinger (Railway free tier) ---
+// Prefer explicit SELF_URL; otherwise derive from Railway public domain
+const SELF_URL = process.env.SELF_URL || (process.env.RAILWAY_PUBLIC_DOMAIN ? `https://${process.env.RAILWAY_PUBLIC_DOMAIN}` : null);
+if (SELF_URL) {
+  const PING_INTERVAL_MS = 25 * 60 * 1000; // 25 minutes to be safe
+  setInterval(async () => {
+    try {
+      const resp = await fetch(`${SELF_URL}/health`, { method: 'GET' });
+      if (!resp.ok) {
+        log(`⚠️ Keep-alive ping non-200: ${resp.status}`);
+      } else {
+        log(`💓 Keep-alive ping ok`);
+      }
+    } catch (e) {
+      log(`⚠️ Keep-alive ping failed: ${e.message}`);
+    }
+  }, PING_INTERVAL_MS);
+  log(`🕒 Keep-alive enabled. Pinging ${SELF_URL}/health every ${PING_INTERVAL_MS/60000}m`);
+} else {
+  log('🕒 Keep-alive disabled (set SELF_URL or RAILWAY_PUBLIC_DOMAIN to enable).');
+}
+
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => log(`🚀 Faucet server running on port ${PORT}`));
