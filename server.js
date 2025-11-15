@@ -9,16 +9,20 @@ const app = express();
 app.use(express.json());
 app.use(cors());
 
-const NET_ALIASES = { polygon: "amoy", amoy: "amoy", avax: "fuji", fuji: "fuji" };
-
+// Faucet contract addresses
 const FAUCET_CONTRACTS = {
-  fuji: "0xB5685a68C3de062918C9C31d111922E36fe71BE3",
   amoy: "0x5aA6275BC3CB6e219Deb8e1bC07747FF5cDeF1B9",
+  avax: "0xB5685a68C3de062918C9C31d111922E36fe71BE3",
+  sepolia: "0x9c33b5Ad90570262A4b49abAFf47e4Ef7DeC3c08",
+  base: "0x9c33b5Ad90570262A4b49abAFf47e4Ef7DeC3c08",
 };
 
+// RPC URLs
 const RPC = {
-  fuji: process.env.AVAX_RPC,
   amoy: process.env.POLYGON_RPC,
+  avax: process.env.AVAX_RPC,
+  sepolia: process.env.SEPOLIA_RPC,
+  base: process.env.BASE_RPC,
 };
 
 const faucetABI = [
@@ -42,11 +46,10 @@ app.post("/claim", async (req, res) => {
     const { network, recipient } = req.body;
     log(`Request: network=${network}, recipient=${recipient}`);
 
-    const key = NET_ALIASES[network];
-    const rpcUrl = RPC[key];
-    const contractAddress = FAUCET_CONTRACTS[key];
+    const rpcUrl = RPC[network];
+    const contractAddress = FAUCET_CONTRACTS[network];
 
-    if (!key || !rpcUrl || !contractAddress)
+    if (!rpcUrl || !contractAddress)
       return res.status(400).send({ success: false, error: "Invalid network" });
 
     if (!ethers.isAddress(recipient))
@@ -66,7 +69,6 @@ app.post("/claim", async (req, res) => {
       return res.send({ success: true, txHash: tx.hash });
     } catch (e) {
       if (e.code === "CALL_EXCEPTION" && e.reason === "Wait before next claim") {
-        // fetch lastClaim and cooldown to calculate remaining time
         const last = await faucet.lastClaim(recipient);
         const cooldown = await faucet.cooldown();
         const now = Math.floor(Date.now() / 1000);

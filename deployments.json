@@ -2,12 +2,45 @@
   "amoy": {
     "network": "Polygon Amoy",
     "chainId": 80002,
-    "address": "0x5aA6275BC3CB6e219Deb8e1bC07747FF5cDeF1B9",
-    "txHash": "0xef6bdb9186041318c43be07afa2a86af64330fac1da52500fafdea105828ec59",
-    "blockNumber": 29081310,
+    "address": "0x9c33b5Ad90570262A4b49abAFf47e4Ef7DeC3c08",
+    "txHash": "0x984353358c2deef735bc269f9b366ce912f9fdaedeccd0fdd7c4b127d2f699b4",
+    "blockNumber": 29083935,
     "claimAmountEther": "1",
     "cooldownSeconds": 86400,
     "initialFundingEther": "0",
-    "deployedAt": "2025-11-15T15:30:33.779Z"
+    "deployedAt": "2025-11-15T16:58:02.784Z"
+  },
+  "fuji": {
+    "network": "Avalanche Fuji",
+    "chainId": 43113,
+    "address": "0x9c33b5Ad90570262A4b49abAFf47e4Ef7DeC3c08",
+    "txHash": "0x9c12f1b29f79a48f0c247c09cc5d9e13a3668bce73cd9d2b061f09e616a1a8ff",
+    "blockNumber": 47730521,
+    "claimAmountEther": "1",
+    "cooldownSeconds": 86400,
+    "initialFundingEther": "0",
+    "deployedAt": "2025-11-15T16:59:33.966Z"
+  },
+  "sepolia": {
+    "network": "Ethereum Sepolia",
+    "chainId": 11155111,
+    "address": "0x9c33b5Ad90570262A4b49abAFf47e4Ef7DeC3c08",
+    "txHash": "0x66a8020a78787b3b9cb2472e94d6aea6c909a6dbeba7e54e646d5085447400c0",
+    "blockNumber": 9636295,
+    "claimAmountEther": "0.01",
+    "cooldownSeconds": 86400,
+    "initialFundingEther": "0",
+    "deployedAt": "2025-11-15T17:01:52.116Z"
+  },
+  "baseSepolia": {
+    "network": "Base Sepolia",
+    "chainId": 84532,
+    "address": "0x9c33b5Ad90570262A4b49abAFf47e4Ef7DeC3c08",
+    "txHash": "0xd9a4fbac0b60ebf660f1f35474db06ab8ff895120e1d94f8d49f9690831e2333",
+    "blockNumber": 33729036,
+    "claimAmountEther": "0.01",
+    "cooldownSeconds": 86400,
+    "initialFundingEther": "0",
+    "deployedAt": "2025-11-15T17:06:10.121Z"
   }
 }

@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /*
-  Deploy NativeFaucet to Polygon Amoy or Avalanche Fuji.
-  - Requires env: OWNER_PRIVATE_KEY, POLYGON_RPC, AVAX_RPC
+  Deploy NativeFaucet to multiple networks.
+  - Requires env: OWNER_PRIVATE_KEY, POLYGON_RPC, AVAX_RPC, ETH_SEPOLIA_RPC, BASE_SEPOLIA_RPC, ARB_SEPOLIA_RPC
   - Prompts for network, claimAmount (in ether), cooldown (seconds), initial funding (in ether)
   - Logs: network, chainId, deployer, balance, tx hash, contract address, block number
   - Writes/updates deployments.json with results
@@ -24,8 +24,7 @@ dotenv.config({ path: path.join(__dirname, '../.env') });
 const ARTIFACT_PATH = path.join(__dirname, '../artifacts/contracts/Faucet.sol/NativeFaucet.json');
 const ARTIFACT = JSON.parse(fs.readFileSync(ARTIFACT_PATH, 'utf8'));
 
-
-
+// Networks
 const NETWORKS = {
   amoy: {
     label: "Polygon Amoy",
@@ -36,6 +35,21 @@ const NETWORKS = {
     label: "Avalanche Fuji",
     rpcEnv: "AVAX_RPC",
     chainHint: 43113,
+  },
+  sepolia: {
+    label: "Ethereum Sepolia",
+    rpcEnv: "ETH_SEPOLIA_RPC",
+    chainHint: 11155111,
+  },
+  baseSepolia: {
+    label: "Base Sepolia",
+    rpcEnv: "BASE_SEPOLIA_RPC",
+    chainHint: 84531,
+  },
+  arbitrumSepolia: {
+    label: "Arbitrum Sepolia",
+    rpcEnv: "ARB_SEPOLIA_RPC",
+    chainHint: 421613,
   },
 };
 
@@ -48,12 +62,18 @@ async function main() {
 
   console.log("\n=== NativeFaucet Deployment ===\n");
   console.log("Select network:");
-  console.log("  1) Polygon Amoy (amoy)");
-  console.log("  2) Avalanche Fuji (fuji)\n");
+  let i = 1;
+  const keys = Object.keys(NETWORKS);
+  for (const k of keys) {
+    console.log(`  ${i}) ${NETWORKS[k].label} (${k})`);
+    i++;
+  }
+  console.log();
 
-  let choice = (await rlQuestion(rl, "Enter choice [1/2] (default 1): ")).trim();
+  let choice = (await rlQuestion(rl, `Enter choice [1-${keys.length}] (default 1): `)).trim();
   if (!choice) choice = "1";
-  let key = choice === "2" ? "fuji" : "amoy";
+  const idx = parseInt(choice, 10) - 1;
+  const key = keys[idx] || keys[0];
   const net = NETWORKS[key];
 
   const rpcUrl = process.env[net.rpcEnv];
