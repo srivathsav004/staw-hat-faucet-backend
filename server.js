@@ -11,8 +11,8 @@ app.use(cors());
 
 // Faucet contract addresses
 const FAUCET_CONTRACTS = {
-  amoy: "0x5aA6275BC3CB6e219Deb8e1bC07747FF5cDeF1B9",
-  avax: "0xB5685a68C3de062918C9C31d111922E36fe71BE3",
+  amoy: "0x9c33b5Ad90570262A4b49abAFf47e4Ef7DeC3c08",
+  avax: "0x9c33b5Ad90570262A4b49abAFf47e4Ef7DeC3c08",
   sepolia: "0x9c33b5Ad90570262A4b49abAFf47e4Ef7DeC3c08",
   base: "0x9c33b5Ad90570262A4b49abAFf47e4Ef7DeC3c08",
 };
