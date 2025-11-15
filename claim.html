@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Native Faucet Public</title>
+<script src="https://cdn.jsdelivr.net/npm/ethers@6.6.0/dist/ethers.umd.min.js"></script>
+
+<style>
+body {
+    background: #0b0b0b;
+    color: #e0e0e0;
+    font-family: Consolas, monospace;
+    padding: 20px;
+    max-width: 650px;
+    margin: auto;
+}
+.panel {
+    background: #111;
+    border: 1px solid #333;
+    padding: 15px;
+    margin-bottom: 20px;
+}
+button {
+    background: #111;
+    border: 1px solid #444;
+    padding: 10px 15px;
+    color: #eee;
+    cursor: pointer;
+    width: 100%;
+}
+button:hover { background: #222; }
+select, input {
+    width: 100%;
+    background: #111;
+    border: 1px solid #333;
+    color: #eee;
+    padding: 8px;
+    margin-top: 10px;
+}
+#logs {
+    background: #0f0f0f;
+    border: 1px solid #333;
+    padding: 15px;
+    height: 220px;
+    overflow-y: scroll;
+    white-space: pre-wrap;
+    font-size: 13px;
+}
+</style>
+</head>
+<body>
+
+<h1>⚡ Native Faucet</h1>
+
+<div class="panel">
+    <label>Select Network</label>
+    <select id="networkSelect">
+        <option value="amoy">Polygon Amoy</option>
+        <option value="fuji">Avalanche Fuji</option>
+    </select>
+</div>
+
+<div class="panel">
+    <h3>Faucet Info</h3>
+    <p><strong>Contract:</strong> <span id="contractAddr">---</span></p>
+    <p><strong>Balance:</strong> <span id="balance">---</span></p>
+    <p><strong>Claim Amount:</strong> <span id="claimAmount">---</span></p>
+    <p><strong>Cooldown:</strong> <span id="cooldown">---</span></p>
+    <button id="refreshInfo">Refresh</button>
+</div>
+
+<div class="panel">
+    <h3>Claim Your Tokens</h3>
+    <label>Enter Your Wallet Address:</label>
+    <input id="userAddress" placeholder="0x...">
+    <button id="claimBtn">Receive Tokens</button>
+</div>
+
+<h3>Logs</h3>
+<div id="logs"></div>
+
+<script>
+const SERVER_URL = "http://localhost:3000";
+
+// Contract addresses & RPCs
+const CONTRACTS = {
+    amoy: "0x5aA6275BC3CB6e219Deb8e1bC07747FF5cDeF1B9",
+    fuji: "0xB5685a68C3de062918C9C31d111922E36fe71BE3"
+};
+
+const RPCS = {
+    amoy: "https://rpc-amoy.polygon.technology",
+    fuji: "https://api.avax-test.network/ext/bc/C/rpc"
+};
+
+// Minimal ABI for info only
+const faucetABI = [
+    "function claimAmount() view returns(uint256)",
+    "function cooldown() view returns(uint256)"
+];
+
+let provider, faucet;
+
+function log(msg) {
+    const el = document.getElementById("logs");
+    const time = new Date().toLocaleTimeString();
+    el.innerHTML += `[${time}] ${msg}\n`;
+    el.scrollTop = el.scrollHeight;
+}
+
+function getSelectedNetwork() {
+    return document.getElementById("networkSelect").value;
+}
+
+// Fetch faucet info directly from contract
+async function loadFaucetInfo() {
+    const network = getSelectedNetwork();
+    const address = CONTRACTS[network];
+    const rpcUrl = RPCS[network];
+
+    provider = new ethers.JsonRpcProvider(rpcUrl);
+    faucet = new ethers.Contract(address, faucetABI, provider);
+
+    document.getElementById("contractAddr").innerText = address;
+
+    try {
+        const bal = await provider.getBalance(address);
+        const claimAmt = await faucet.claimAmount();
+        const cd = await faucet.cooldown();
+
+        document.getElementById("balance").innerText = ethers.formatEther(bal) + " native";
+        document.getElementById("claimAmount").innerText = ethers.formatEther(claimAmt) + " native";
+        document.getElementById("cooldown").innerText = cd + " sec";
+
+        log(`✅ Faucet info updated for ${network}.`);
+    } catch (e) {
+        log("❌ Failed to load faucet info: " + e.message);
+        console.error(e);
+    }
+}
+
+document.getElementById("refreshInfo").onclick = loadFaucetInfo;
+
+// Claim tokens via server
+document.getElementById("claimBtn").onclick = async () => {
+    const userAddr = document.getElementById("userAddress").value.trim();
+    const network = getSelectedNetwork();
+
+    if (!userAddr) return alert("Enter your wallet address");
+
+    try {
+        log(`Requesting tokens for ${userAddr} on ${network}...`);
+
+        const response = await fetch(`${SERVER_URL}/claim`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ network, recipient: userAddr })
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+            log(`🎉 Tokens sent! TX hash: ${result.txHash}`);
+        } else {
+            log(`❌ Claim failed: ${result.error}`);
+        }
+
+    } catch (e) {
+        log("❌ Claim request failed: " + e.message);
+        console.error(e);
+    }
+};
+
+// Load faucet info on page load
+loadFaucetInfo();
+
+// Update info when network changes
+document.getElementById("networkSelect").onchange = loadFaucetInfo;
+</script>
+
+</body>
+</html>

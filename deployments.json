@@ -1,0 +1,13 @@
+{
+  "amoy": {
+    "network": "Polygon Amoy",
+    "chainId": 80002,
+    "address": "0x5aA6275BC3CB6e219Deb8e1bC07747FF5cDeF1B9",
+    "txHash": "0xef6bdb9186041318c43be07afa2a86af64330fac1da52500fafdea105828ec59",
+    "blockNumber": 29081310,
+    "claimAmountEther": "1",
+    "cooldownSeconds": 86400,
+    "initialFundingEther": "0",
+    "deployedAt": "2025-11-15T15:30:33.779Z"
+  }
+}
