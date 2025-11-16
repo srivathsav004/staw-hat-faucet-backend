@@ -15,10 +15,12 @@ app.use(cors());
 // Behind proxies (Cloudflare/NGINX), trust X-Forwarded-For / cf-connecting-ip
 app.set('trust proxy', process.env.TRUST_PROXY === 'true');
 
+const ALLOWED_NETWORKS = ["amoy", "fuji", "sepolia", "base"];
+
 // Faucet contract addresses
 const FAUCET_CONTRACTS = {
   amoy: "0x9c33b5Ad90570262A4b49abAFf47e4Ef7DeC3c08",
-  avax: "0x9c33b5Ad90570262A4b49abAFf47e4Ef7DeC3c08",
+  fuji: "0x9c33b5Ad90570262A4b49abAFf47e4Ef7DeC3c08",
   sepolia: "0x9c33b5Ad90570262A4b49abAFf47e4Ef7DeC3c08",
   base: "0x9c33b5Ad90570262A4b49abAFf47e4Ef7DeC3c08",
 };
@@ -26,9 +28,9 @@ const FAUCET_CONTRACTS = {
 // RPC URLs
 const RPC = {
   amoy: process.env.POLYGON_RPC,
-  avax: process.env.AVAX_RPC,
-  sepolia: process.env.SEPOLIA_RPC,
-  base: process.env.BASE_RPC,
+  fuji: process.env.AVAX_RPC,
+  sepolia: process.env.ETH_SEPOLIA_RPC,
+  base: process.env.BASE_SEPOLIA_RPC,
 };
 
 const faucetABI = [
@@ -172,6 +174,10 @@ app.post("/claim", async (req, res) => {
     const clientIp = getClientIp(req);
     log(`Request: ip=${clientIp}, network=${network}, recipient=${recipient}`);
 
+    if (!ALLOWED_NETWORKS.includes(network)) {
+      return res.status(400).send({ success: false, error: "Invalid network" });
+    }
+
     // 1) Human verification first
     if (!captchaToken) {
       return res.status(400).send({ success: false, error: "Invalid captcha" });
@@ -206,8 +212,10 @@ app.post("/claim", async (req, res) => {
     const rpcUrl = RPC[network];
     const contractAddress = FAUCET_CONTRACTS[network];
 
-    if (!rpcUrl || !contractAddress)
-      return res.status(400).send({ success: false, error: "Invalid network" });
+    if (!rpcUrl)
+      return res.status(400).send({ success: false, error: `Invalid network: RPC not configured for ${network}` });
+    if (!contractAddress)
+      return res.status(400).send({ success: false, error: `Invalid network: contract not configured for ${network}` });
 
     if (!ethers.isAddress(recipient))
       return res.status(400).send({ success: false, error: "Invalid recipient address" });
